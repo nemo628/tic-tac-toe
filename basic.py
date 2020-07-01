@@ -3,10 +3,10 @@ import sys
 import random
 # from random import random
 
-human = "X"
-ai = "O"
+human = "O"
+ai = "X"
 blank = " "
-INF = 10
+INF = 2
 
 
 class Board:
@@ -33,34 +33,40 @@ class Board:
 
         print()
 
-    def minimax(self, depth, isMaximizing):
-        if self.isGameOver():
-            return self.isGameOver()
+    def minimax(self, depth, alpha, beta, isMaximizing):
+        # self.showBoard()
+        checkScore = self.isGameOver()
+        if checkScore != -2:
+            # self.showBoard()
+            # print(checkScore)
+            return checkScore
 
         if isMaximizing:
-            score = 0
             bestScore = -INF
             for i in range(3):
                 for j in range(3):
                     if(self.board[i][j] == blank):
                         self.board[i][j] = ai
-                        score = self.minimax(depth + 1, False)
+                        score = self.minimax(depth + 1, alpha, beta, False)
                         self.board[i][j] = blank
                         bestScore = max(score, bestScore)
-
+                        alpha = max(alpha, bestScore)
+                        if alpha >= beta:
+                            break
             return bestScore
 
         else:
-            score = 0
             bestScore = INF
             for i in range(3):
                 for j in range(3):
                     if(self.board[i][j] == blank):
                         self.board[i][j] = human
-                        score = self.minimax(depth + 1, True)
+                        score = self.minimax(depth + 1, alpha, beta, True)
                         self.board[i][j] = blank
                         bestScore = min(score, bestScore)
-
+                        beta = min(beta, bestScore)
+                        if beta <= alpha:
+                            break
             return bestScore
 
     def findEmpty(self):
@@ -76,14 +82,14 @@ class Board:
             return (-1, -1)
 
     def findBest(self, depth):
-        score = INF
+        score = 0
         bestScore = -INF
-        bestx, besty = self.findEmpty()
+        bestx, besty = -1, -1
         for i in range(3):
             for j in range(3):
                 if(self.board[i][j] == blank):
                     self.board[i][j] = ai
-                    score = self.minimax(depth, False)
+                    score = self.minimax(depth, -INF, INF, False)
                     self.board[i][j] = blank
                     if score > bestScore:
                         bestScore = score
@@ -111,25 +117,38 @@ class Board:
                   1 if ai wins
                   0 if draw
         '''
+        winner = ""
         # winner in row
         for i in range(3):
-            if (self.board[i][1] != blank and self.board[i][1] == self.board[i][0] and self.board[i][1] == self.board[i][2]):
-                return -1 if self.board[i][0] == human else 1
+            if (self.board[i][1] == self.board[i][0] and self.board[i][1] == self.board[i][2]):
+                winner = self.board[i][0]
 
         #winner in col
         for i in range(3):
-            if (self.board[1][i] != blank and self.board[1][i] == self.board[0][i] and self.board[1][i] == self.board[2][i]):
-                return -1 if self.board[0][i] == human else 1
+            if (self.board[1][i] == self.board[0][i] and self.board[1][i] == self.board[2][i]):
+                winner = self.board[0][i]
 
         # diagonal winner
-        if (self.board[1][1] != blank and self.board[0][0] == self.board[1][1] and self.board[0][0] == self.board[2][2]) or (self.board[1][1] != blank and self.board[0][2] == self.board[1][1] and self.board[0][2] == self.board[2][0]):
-            return -1 if self.board[1][1] == human else 1
+        if (self.board[0][0] == self.board[1][1] and self.board[0][0] == self.board[2][2]) or (self.board[0][2] == self.board[1][1] and self.board[0][2] == self.board[2][0]):
+            winner = self.board[1][1]
 
-        return 0
+        countEmpty = 0
+        for i in range(3):
+            for j in range(3):
+                if self.board[i][j] == blank:
+                    countEmpty += 1
+
+        if winner == blank and countEmpty == 0:
+            return 0
+        elif winner == ai:
+            return 1
+        elif winner == human:
+            return -1
+        else:
+            return -2
+
 
 # could be a static method
-
-
 def askHuman():
     x = input("enter x co-ordinate: ")
     y = input("enter y co-ordinate: ")
@@ -153,15 +172,15 @@ def main():
         gameValue = board.isGameOver()
         if gameValue == 1:
             print("Game over!! AI Wins!")
-            break
+            return
 
         elif gameValue == -1:
             print("Congrats! You won!")
-            break
+            return
 
         turns += 1
 
-    if gameValue == 0 and turns == 9:
+    if turns == 9:
         print("It's a Draw!")
 
 
