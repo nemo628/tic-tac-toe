@@ -5,6 +5,7 @@ import random
 
 human = "O"
 ai = "X"
+draw = "D"
 blank = " "
 INF = 2
 
@@ -36,10 +37,10 @@ class Board:
     def minimax(self, depth, alpha, beta, isMaximizing):
         # self.showBoard()
         checkScore = self.isGameOver()
-        if checkScore != -2:
+        if checkScore:
             # self.showBoard()
             # print(checkScore)
-            return checkScore
+            return 1 if checkScore == ai else 0 if checkScore == draw else -1
 
         if isMaximizing:
             bestScore = -INF
@@ -113,24 +114,31 @@ class Board:
 
     def isGameOver(self):
         '''
-        returns: -1 if human wins
-                  1 if ai wins
-                  0 if draw
+        returns: human if human wins
+                 ai if ai wins
+                 draw if draw
+
         '''
-        winner = ""
+        winner = None
         # winner in row
         for i in range(3):
             if (self.board[i][1] == self.board[i][0] and self.board[i][1] == self.board[i][2]):
                 winner = self.board[i][0]
+                if winner != blank:
+                    return winner
 
         #winner in col
         for i in range(3):
             if (self.board[1][i] == self.board[0][i] and self.board[1][i] == self.board[2][i]):
                 winner = self.board[0][i]
+                if winner != blank:
+                    return winner
 
         # diagonal winner
         if (self.board[0][0] == self.board[1][1] and self.board[0][0] == self.board[2][2]) or (self.board[0][2] == self.board[1][1] and self.board[0][2] == self.board[2][0]):
             winner = self.board[1][1]
+            if winner != blank:
+                return winner
 
         countEmpty = 0
         for i in range(3):
@@ -138,14 +146,10 @@ class Board:
                 if self.board[i][j] == blank:
                     countEmpty += 1
 
-        if winner == blank and countEmpty == 0:
-            return 0
-        elif winner == ai:
-            return 1
-        elif winner == human:
-            return -1
+        if countEmpty == 0:  # draw
+            return draw
         else:
-            return -2
+            return None
 
 
 # could be a static method
@@ -170,12 +174,16 @@ def main():
 
         board.showBoard()
         gameValue = board.isGameOver()
-        if gameValue == 1:
+        if gameValue == ai:
             print("Game over!! AI Wins!")
             return
 
-        elif gameValue == -1:
+        elif gameValue == human:
             print("Congrats! You won!")
+            return
+
+        elif gameValue == draw:
+            print("It's a draw!")
             return
 
         turns += 1
