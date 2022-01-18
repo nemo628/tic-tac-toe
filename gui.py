@@ -13,7 +13,7 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 
 
-class guiBoard(Board):
+class GuiBoard(Board):
     def __init__(self):
         super().__init__()
         pygame.init()
@@ -163,5 +163,5 @@ class guiBoard(Board):
             self.CLOCK.tick(self.fps)
 
 
-board = guiBoard()
+board = GuiBoard()
 board.game()
